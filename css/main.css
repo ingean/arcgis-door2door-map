@@ -1,0 +1,53 @@
+:root {
+  color-scheme: dark; /* Dark style scrollbars etc.*/
+}
+
+html,
+body,
+#viewDiv {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+
+calcite-loader {
+  align-self: center;
+  justify-self: center;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+#header-title {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+#signin {
+  margin-left: auto;
+}
+
+#theme-switcher {
+  position: absolute;
+  right: 105px;
+  margin: 0.75rem;
+  z-index: 2;
+  border: none;
+  background-color: var(--calcite-ui-foreground-1);
+}
+
+.theme-icon {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+#info-content {
+  padding: 0.75rem;
+}
+
+calcite-rating {
+  margin-top: 0.25rem;
+}

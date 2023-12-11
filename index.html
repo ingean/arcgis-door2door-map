@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Geodata AS - Demo</title>
+    <link rel="icon" type="image/png" href="./images/geodata-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="./images/geodata-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="./images/geodata-96x96.png" sizes="96x96">
+
+    <script src="https://js.arcgis.com/calcite-components/1.0.7/calcite.esm.js" type="module"></script>
+    <link rel="stylesheet" href="https://js.arcgis.com/calcite-components/1.0.7/calcite.css" />
+    
+    <link id="jsapi-theme-light" rel="stylesheet" href="https://js.arcgis.com/4.26/@arcgis/core/assets/esri/themes/light/main.css" disabled>
+    <link id="jsapi-theme-dark" rel="stylesheet" href="https://js.arcgis.com/4.26/@arcgis/core/assets/esri/themes/dark/main.css" />
+  
+    <link rel="stylesheet" href="./css/main.css" />
+  </head>
+  <body>
+    <div id="calcite-theme" class="calcite-mode-dark">
+
+      <calcite-shell content-behind>
+        <div id="title-toolbar" slot="header" class="flex-row">
+          <h2 id="header-title"></h2>
+          <div id="signin"></div>
+          <div id="theme-switcher">
+            <calcite-label disable-spacing layout="inline">
+              <calcite-icon icon="brightness" scale="s" class="theme-icon"></calcite-icon>
+              <calcite-switch checked></calcite-switch>
+              <calcite-icon icon="moon" scale="s" class="theme-icon"></calcite-icon>
+            </calcite-label>
+          </div>
+        </div>
+
+        <calcite-loader active></calcite-loader>
+
+        <calcite-shell-panel slot="panel-start" detached>
+  
+          <calcite-action-bar slot="action-bar" intl-collapse="Minimere" intl-expand="Maksimere">
+            <calcite-action data-action-id="layers" icon="layers" text="Kartlag"></calcite-action>
+            <calcite-action data-action-id="basemaps" icon="basemap" text="Bakgrunnskart"></calcite-action>
+            <calcite-action data-action-id="legend" icon="legend" text="Tegnforklaring"></calcite-action>
+            <calcite-action data-action-id="bookmarks" icon="bookmark" text="Bokmerker"></calcite-action>
+            <calcite-action data-action-id="print" icon="print" text="Utskrift"></calcite-action>
+            <calcite-action data-action-id="information" icon="information" text="Informasjon"></calcite-action>
+          </calcite-action-bar>
+  
+          <!-- map-specific panels (each one provides a div for JS API widgets) -->
+          <calcite-panel heading="Kartlag" height-scale="l" width-scale="m" data-panel-id="layers" hidden>
+            <div id="layers-container"></div>
+          </calcite-panel>
+          <calcite-panel heading="Bakgrunnskart" height-scale="l" width-scale="m" data-panel-id="basemaps" hidden>
+            <div id="basemaps-container"></div>
+          </calcite-panel>
+          <calcite-panel heading="Tegnforklaring" height-scale="l" width-scale="m" data-panel-id="legend" hidden>
+            <div id="legend-container"></div>
+          </calcite-panel>
+          <calcite-panel heading="Bokmerker" height-scale="l" width-scale="m" data-panel-id="bookmarks" hidden>
+            <div id="bookmarks-container"></div>
+          </calcite-panel>
+          <calcite-panel heading="Utskrift" height-scale="l" width-scale="m" data-panel-id="print" hidden>
+            <div id="print-container"></div>
+          </calcite-panel>
+  
+          <!-- info panel (populates with info from the web map) -->
+          <calcite-panel heading="Informasjon" data-panel-id="information" hidden>
+            <div id="info-content">
+              <img id="item-thumbnail" />
+              <div id="item-description">
+                <!--dynamically populated-->
+              </div>
+              <calcite-label layout="inline">
+                <b>Vurdering:</b>
+                <calcite-rating read-only>
+                  <!--dynamically populated-->
+                </calcite-rating>
+              </calcite-label>
+            </div>
+          </calcite-panel>
+  
+        </calcite-shell-panel>
+        
+        <div id="viewDiv"></div>
+      
+      </calcite-shell>
+    
+    </div> <!-- Calcite-theme-->
+  </body>
+  <script type="module" src="js/main.js"> 
+  </script>
+</html>
