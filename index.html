@@ -8,13 +8,14 @@
     <link rel="icon" type="image/png" href="./images/geodata-32x32.png" sizes="32x32">
     <link rel="icon" type="image/png" href="./images/geodata-96x96.png" sizes="96x96">
 
-    <script src="https://js.arcgis.com/calcite-components/1.0.7/calcite.esm.js" type="module"></script>
-    <link rel="stylesheet" href="https://js.arcgis.com/calcite-components/1.0.7/calcite.css" />
+    <script src="https://js.arcgis.com/calcite-components/1.11.0/calcite.esm.js" type="module"></script>
+    <link rel="stylesheet" href="https://js.arcgis.com/calcite-components/1.11.0/calcite.css" />
     
-    <link id="jsapi-theme-light" rel="stylesheet" href="https://js.arcgis.com/4.26/@arcgis/core/assets/esri/themes/light/main.css" disabled>
-    <link id="jsapi-theme-dark" rel="stylesheet" href="https://js.arcgis.com/4.26/@arcgis/core/assets/esri/themes/dark/main.css" />
+    <link id="jsapi-theme-light" rel="stylesheet" href="https://js.arcgis.com/4.28/@arcgis/core/assets/esri/themes/light/main.css" disabled>
+    <link id="jsapi-theme-dark" rel="stylesheet" href="https://js.arcgis.com/4.28/@arcgis/core/assets/esri/themes/dark/main.css" />
   
     <link rel="stylesheet" href="./css/main.css" />
+    <link rel="stylesheet" href="./css/sidebar.css" />
   </head>
   <body>
     <div id="calcite-theme" class="calcite-mode-dark">
@@ -37,12 +38,10 @@
         <calcite-shell-panel slot="panel-start" detached>
   
           <calcite-action-bar slot="action-bar" intl-collapse="Minimere" intl-expand="Maksimere">
+            <calcite-action data-action-id="route" icon="walking-time" text="Min rute"></calcite-action>
             <calcite-action data-action-id="layers" icon="layers" text="Kartlag"></calcite-action>
             <calcite-action data-action-id="basemaps" icon="basemap" text="Bakgrunnskart"></calcite-action>
             <calcite-action data-action-id="legend" icon="legend" text="Tegnforklaring"></calcite-action>
-            <calcite-action data-action-id="bookmarks" icon="bookmark" text="Bokmerker"></calcite-action>
-            <calcite-action data-action-id="print" icon="print" text="Utskrift"></calcite-action>
-            <calcite-action data-action-id="information" icon="information" text="Informasjon"></calcite-action>
           </calcite-action-bar>
   
           <!-- map-specific panels (each one provides a div for JS API widgets) -->
@@ -55,27 +54,38 @@
           <calcite-panel heading="Tegnforklaring" height-scale="l" width-scale="m" data-panel-id="legend" hidden>
             <div id="legend-container"></div>
           </calcite-panel>
-          <calcite-panel heading="Bokmerker" height-scale="l" width-scale="m" data-panel-id="bookmarks" hidden>
-            <div id="bookmarks-container"></div>
-          </calcite-panel>
-          <calcite-panel heading="Utskrift" height-scale="l" width-scale="m" data-panel-id="print" hidden>
-            <div id="print-container"></div>
-          </calcite-panel>
+         
   
           <!-- info panel (populates with info from the web map) -->
-          <calcite-panel heading="Informasjon" data-panel-id="information" hidden>
-            <div id="info-content">
-              <img id="item-thumbnail" />
-              <div id="item-description">
-                <!--dynamically populated-->
+          <calcite-panel heading="Min rute" data-panel-id="route">
+            
+            <calcite-block open heading="Innsamlingsrute" description="Nærmeste husstander til din adresse">
+              <calcite-block-section open text="Innstillinger">
+                <calcite-label>
+                  Min adresse
+                  <div class="toolbar-btns">
+                    <calcite-input-text id="address-txt" icon="home" placeholder="Bruk adressesøket i kartet" read-only></calcite-input-text>
+                    <calcite-button id="clear-address-btn" icon-start="trash" disabled></calcite-button>
+                  </div>
+                </calcite-label>
+                <calcite-label>
+                  Antall husstander du vil besøke
+                  <calcite-input-number id="unit-count" placeholder="Velg et tall mellom 10 og 50" step="10" icon="personal-homepage" max="50" min="10" value="30"></calcite-input-number>
+                </calcite-label>
+              </calcite-block-section>
+              <calcite-block-section id="result-details-section" text="Addresser å besøke">
+                <calcite-list id="result-list"></calcite-list>
+              </calcite-block-section>
+              <calcite-block-section id="result-section" open text="Oppsummering">
+                <calcite-progress id="progress" value="0.8" type="indeterminate" hidden></calcite-progress>
+                <div id="result-text"></div>
+              </calcite-block-section>
+              <div class="toolbar-btns">
+                <calcite-button id="book-reservations-btn" icon-start="save" disabled>Reservér</calcite-button>
+                <calcite-button id="clear-reservations-btn" icon-start="trash" kind="danger" disabled>Kansellér</calcite-button>
               </div>
-              <calcite-label layout="inline">
-                <b>Vurdering:</b>
-                <calcite-rating read-only>
-                  <!--dynamically populated-->
-                </calcite-rating>
-              </calcite-label>
-            </div>
+            </calcite-block>
+
           </calcite-panel>
   
         </calcite-shell-panel>

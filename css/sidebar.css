@@ -1,0 +1,6 @@
+.toolbar-btns {
+  display: flex;
+  flex-direction: row;
+  margin: 8px;
+  padding: 8px;
+}

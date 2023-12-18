@@ -1,9 +1,11 @@
-import Bookmarks from 'https://js.arcgis.com/4.22/@arcgis/core/widgets/Bookmarks.js'
-import BasemapGallery from 'https://js.arcgis.com/4.22/@arcgis/core/widgets/BasemapGallery.js'
-import LayerList from 'https://js.arcgis.com/4.22/@arcgis/core/widgets/LayerList.js'
-import Legend from 'https://js.arcgis.com/4.22/@arcgis/core/widgets/Legend.js'
-import Print from 'https://js.arcgis.com/4.22/@arcgis/core/widgets/Print.js'
-import Fullscreen from "https://js.arcgis.com/4.22/@arcgis/core/widgets/Fullscreen.js"
+import Bookmarks from 'https://js.arcgis.com/4.28/@arcgis/core/widgets/Bookmarks.js'
+import BasemapGallery from 'https://js.arcgis.com/4.28/@arcgis/core/widgets/BasemapGallery.js'
+import LayerList from 'https://js.arcgis.com/4.28/@arcgis/core/widgets/LayerList.js'
+import Legend from 'https://js.arcgis.com/4.28/@arcgis/core/widgets/Legend.js'
+import Print from 'https://js.arcgis.com/4.28/@arcgis/core/widgets/Print.js'
+import Fullscreen from "https://js.arcgis.com/4.28/@arcgis/core/widgets/Fullscreen.js"
+import Search from "https://js.arcgis.com/4.28/@arcgis/core/widgets/Search.js"
+import { GetClosestWalkTime } from './ODMatrix.js'
 
 export default class ActionBar {
   constructor(view, defaultActiveWidgetId = null) {
@@ -33,10 +35,18 @@ export default class ActionBar {
       }),
       fullscreen: new Fullscreen({
         view: view
+      }),
+      search: new Search({
+        view: view
       })
     }
     view.ui.move("zoom", "bottom-right")
-    view.ui.add(this.widgets.fullscreen, "top-right")
+    view.ui.add(this.widgets.fullscreen, "bottom-right")
+    view.ui.add(this.widgets.search, "top-right")
+
+    this.widgets.search.on('select-result', results => GetClosestWalkTime(results))
+
+
     document.querySelector("calcite-action-bar").addEventListener("click", this.handleActionBarClick)
   }
 

@@ -1,5 +1,5 @@
-import VectorTileLayer from 'https://js.arcgis.com/4.22/@arcgis/core/layers/VectorTileLayer.js'
-import Basemap from 'https://js.arcgis.com/4.22/@arcgis/core/Basemap.js'
+import VectorTileLayer from 'https://js.arcgis.com/4.28/@arcgis/core/layers/VectorTileLayer.js'
+import Basemap from 'https://js.arcgis.com/4.28/@arcgis/core/Basemap.js'
 
 export default class MapTheme {
   constructor(view, swichBasemap = true) {
