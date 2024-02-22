@@ -1,7 +1,7 @@
 import FeatureSet from "@arcgis/core/rest/support/FeatureSet.js"
 import { addFeaturesToMap } from "./main.js"
 import { getRoute } from "./Routing.js"
-import { setReservedDestinations, clearReservations } from "./booking.js"
+import { setReservedDestinations, clearReservations } from "./Booking.js"
 import { toggleProgessBar } from "./utils/utils.js"
 import { ErrorAlert, WarningAlert } from './components/Alert.js'
 import { solveODMatrix } from './ODMatrix.js'

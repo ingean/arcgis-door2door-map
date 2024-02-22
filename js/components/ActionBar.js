@@ -6,7 +6,7 @@ import Print from '@arcgis/core/widgets/Print.js'
 import Fullscreen from "@arcgis/core/widgets/Fullscreen.js"
 import Search from "@arcgis/core/widgets/Search.js"
 import { setOrigin, createRoute } from '../createRoute.js'
-import { clearReservations } from '../booking.js'
+import { clearReservations } from '../Booking.js'
 
 export default class ActionBar {
   constructor(view, defaultActiveWidgetId = null) {
