@@ -4,7 +4,7 @@ import ActionBar from './components/ActionBar.js'
 import MapTheme from './components/MapTheme.js'
 //import { authenticate } from './utils/OAuth2.js'
 import { setDestinationLayerView } from './createRoute.js'
-import { setDestinationLayer } from './booking.js'
+import { setDestinationLayer } from './bookReservations.js'
 
 //const appId = 'xG2kkVesAXGRx5t1'
 //const portal = await authenticate(appId) // ArcGIS Identity authentication
