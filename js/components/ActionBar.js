@@ -1,11 +1,12 @@
-import Bookmarks from 'https://js.arcgis.com/4.28/@arcgis/core/widgets/Bookmarks.js'
-import BasemapGallery from 'https://js.arcgis.com/4.28/@arcgis/core/widgets/BasemapGallery.js'
-import LayerList from 'https://js.arcgis.com/4.28/@arcgis/core/widgets/LayerList.js'
-import Legend from 'https://js.arcgis.com/4.28/@arcgis/core/widgets/Legend.js'
-import Print from 'https://js.arcgis.com/4.28/@arcgis/core/widgets/Print.js'
-import Fullscreen from "https://js.arcgis.com/4.28/@arcgis/core/widgets/Fullscreen.js"
-import Search from "https://js.arcgis.com/4.28/@arcgis/core/widgets/Search.js"
-import { GetClosestWalkTime } from './ODMatrix.js'
+import Bookmarks from '@arcgis/core/widgets/Bookmarks.js'
+import BasemapGallery from '@arcgis/core/widgets/BasemapGallery.js'
+import LayerList from '@arcgis/core/widgets/LayerList.js'
+import Legend from '@arcgis/core/widgets/Legend.js'
+import Print from '@arcgis/core/widgets/Print.js'
+import Fullscreen from "@arcgis/core/widgets/Fullscreen.js"
+import Search from "@arcgis/core/widgets/Search.js"
+import { setOrigin, createRoute } from '../createRoute.js'
+import { clearReservations } from '../booking.js'
 
 export default class ActionBar {
   constructor(view, defaultActiveWidgetId = null) {
@@ -37,17 +38,19 @@ export default class ActionBar {
         view: view
       }),
       search: new Search({
-        view: view
+        view: view, 
+        container: 'search-widget'
       })
     }
     view.ui.move("zoom", "bottom-right")
     view.ui.add(this.widgets.fullscreen, "bottom-right")
-    view.ui.add(this.widgets.search, "top-right")
 
-    this.widgets.search.on('select-result', results => GetClosestWalkTime(results))
-
+    //this.widgets.search.on('select-result', results => setOrigin(results))
+    this.widgets.search.on('select-result', results => createRoute(results))
+    this.widgets.search.on('search-clear', e => clearReservations())
 
     document.querySelector("calcite-action-bar").addEventListener("click", this.handleActionBarClick)
+    //document.getElementById('create-route-btn').addEventListener('click', createRoute)
   }
 
   handleActionBarClick = ({ target }) => { // Use fat arrow function or this will point at the clicked html element

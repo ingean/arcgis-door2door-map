@@ -1,18 +1,12 @@
- import Portal from 'https://js.arcgis.com/4.28/@arcgis/core/portal/Portal.js'
-import OAuthInfo from 'https://js.arcgis.com/4.28/@arcgis/core/identity/OAuthInfo.js'
-import esriId from 'https://js.arcgis.com/4.28/@arcgis/core/identity/IdentityManager.js'
+ 
+import Portal from '@arcgis/core/portal/Portal.js'
+import OAuthInfo from '@arcgis/core/identity/OAuthInfo.js'
+import esriId from '@arcgis/core/identity/IdentityManager.js'
 
-const appId = 'xG2kkVesAXGRx5t1' // AppId for arcgis-calcite-template (Dev folder at geodata.maps.arcgis.com) 
+let info = null
 
-const info = new OAuthInfo({
-  appId,
-  flowType: "auto", // default that uses two-step flow
-  popup: false
-});
-
-esriId.registerOAuthInfos([info]);
-
-export const authenticate = () => {
+export const authenticate = (appId) => {
+  registerInfo(appId)
   return new Promise((resolve, reject) => {
     esriId.checkSignInStatus(info.portalUrl + "/sharing").then(() => {
       const portal = new Portal() // User is signed in
@@ -27,6 +21,16 @@ export const authenticate = () => {
       resolve()
     })
   })
+}
+
+const registerInfo = (appId) => {
+  info = new OAuthInfo({
+    appId,
+    flowType: "auto", // default that uses two-step flow
+    popup: false
+  })
+  
+  esriId.registerOAuthInfos([info])
 }
 
 const signIn = () => {

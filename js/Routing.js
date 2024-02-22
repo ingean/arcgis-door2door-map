@@ -1,14 +1,14 @@
-import * as route from "https://js.arcgis.com/4.28/@arcgis/core/rest/route.js"
-import * as networkService from "https://js.arcgis.com/4.28/@arcgis/core/rest/networkService.js"
-import RouteParameters from "https://js.arcgis.com/4.28/@arcgis/core/rest/support/RouteParameters.js"
-import FeatureSet from "https://js.arcgis.com/4.28/@arcgis/core/rest/support/FeatureSet.js"
-import Graphic from "https://js.arcgis.com/4.28/@arcgis/core/Graphic.js"
-import { toggleProgessBar } from "./Utils.js"
-import { div } from "./html.js"
-import { element } from "./html.js"
+import * as route from "@arcgis/core/rest/route.js"
+import * as networkService from "@arcgis/core/rest/networkService.js"
+import RouteParameters from "@arcgis/core/rest/support/RouteParameters.js"
+import FeatureSet from "@arcgis/core/rest/support/FeatureSet.js"
+import Graphic from "@arcgis/core/Graphic.js"
+import { toggleProgessBar } from "./utils/utils.js"
+import { div } from "./utils/html.js"
+import { element } from "./utils/html.js"
 import { addFeaturesToMap, zoomToFeature } from "./main.js"
-import { getDestinationsToFind } from "./ODMatrix.js"
-import { formatDistance, formatTime } from "./Utils.js"
+import { getDestinationsToFind } from "./createRoute.js"
+import * as format from "./utils/format.js"
 
 const apiKey = 'AAPKf28ba4fdd1e945a1be5f8d43dbd650eaMjyiDjdFXaCPZzo5erYJ7Xc7XKvBlbJZIPvNu0O2zwfeFiGhqoBvtQwJUZ1DMXIL'
 const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World"
@@ -44,7 +44,7 @@ export const getRoute = async (features) => {
       if (data.routeResults.length > 0) {
         addRouteStats(data.routeResults[0].route)
         //addRouteStops(data.routeResults[0].stops)
-        groupedAddressList(data.routeResults[0].stops)
+        addGroupedAddressList(data.routeResults[0].stops)
       }
     })
     .catch((error)=>{
@@ -52,9 +52,12 @@ export const getRoute = async (features) => {
     })
 }
 
-export const removeRouteStats = () => {
+export const removeResults = () => {
   let results = document.getElementById('result-text')
   results.innerHTML = ''
+
+  let list = document.getElementById('result-list')
+  list.innerHTML = ''
 }
 
 const addRouteStats = (route) => {
@@ -64,12 +67,17 @@ const addRouteStats = (route) => {
   let kms = route.attributes['Total_Kilometers'] + kmPrDoor * getDestinationsToFind()
 
   let results = document.getElementById('result-text')
-  let time = div(null, `Estimert gangtid er ${formatTime(mins)}`)
-  let length = div(null, `Estimert gangavstand er ${formatDistance(kms)}`)
-  let totalTime = div(null, `Estimert tidsbruk er ${formatTime(total)} (3 min pr dør)`)
+  results.innerHTML = ''
+
+  let time = div(null, `Estimert gangtid er ${format.time(mins)}`)
+  let length = div(null, `Estimert gangavstand er ${format.distance(kms)}`)
+  let totalTime = div(null, `Estimert tidsbruk er ${format.time(total)} (3 min pr dør)`)
   results.append(time, length, totalTime)
 
-  addFeaturesToMap([route], '', '', 'Rute')
+  let resultBlock = document.getElementById('result-block')
+  resultBlock.open = true
+
+  //addFeaturesToMap([route], '', '', 'Rute')
   toggleProgessBar()
 }
 
@@ -88,8 +96,10 @@ const getTravelMode = async () => {
   return supportedTravelModes.find((mode) => mode.name === "Walking Time");
 }
 
-const groupedAddressList = (stops) => {
+const addGroupedAddressList = (stops) => {
   let list = document.getElementById('result-list')
+  list.innerHTML = ''
+
   let groupedStops = Object.groupBy(stops, stop => {
     let name = JSON.parse(stop.attributes.Name)
     return name.adresse
@@ -124,14 +134,11 @@ const addressListItem = (feature, grouped = false) => {
       icon: `layer-zoom-to`
     }
   )
-
-
-
   //action.addEventListener('click', zoomToFeature(feature.geometry))
   return element('calcite-list-item', 
     {
       label,
-      description: `Stopp ${nr} på ruten (${formatTime(min)} ${formatDistance(dist)})`
+      description: `Stopp ${nr} på ruten (${format.time(min)} ${format.distance(dist)})`
     }, 
     action
   )

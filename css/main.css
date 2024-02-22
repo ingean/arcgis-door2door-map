@@ -1,5 +1,9 @@
 :root {
-  color-scheme: dark; /* Dark style scrollbars etc.*/
+  /* color-scheme: dark; /* Dark style scrollbars etc.*/
+  color-scheme: light; /* Dark style scrollbars etc.*/
+  --calcite-shell-panel-min-width: 800px;
+  --calcite-shell-panel-max-width: 800px;
+  --calcite-shell-panel-width: 800px;
 }
 
 html,
@@ -44,10 +48,22 @@ calcite-loader {
   cursor: pointer;
 }
 
+#search-widget {
+  width: 779px
+}
+
+.esri-search__container {
+  border: 1px solid black;
+}
+
 #info-content {
   padding: 0.75rem;
 }
 
 calcite-rating {
   margin-top: 0.25rem;
+}
+
+calcite-progress {
+  margin: 8px;
 }

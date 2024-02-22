@@ -1,85 +1,45 @@
-import WebMap from 'https://js.arcgis.com/4.28/@arcgis/core/WebMap.js'
-import MapView from 'https://js.arcgis.com/4.28/@arcgis/core/views/MapView.js'
-import FeatureLayer from "https://js.arcgis.com/4.28/@arcgis/core/layers/FeatureLayer.js"
-import Graphic from "https://js.arcgis.com/4.28/@arcgis/core/Graphic.js"
-import ActionBar from './ActionBar.js'
-import MapTheme from './MapTheme.js'
-import * as OAuth2 from './OAuth2.js'
-import { setDestinationLayerView } from './ODMatrix.js'
-import { setDestinationLayer } from './Booking.js'
-import { displayAddress } from './ODMatrix.js'
+import esriConfig from "@arcgis/core/config.js";
+import WebMapWrap from './components/WebMap.js'
+import ActionBar from './components/ActionBar.js'
+import MapTheme from './components/MapTheme.js'
+//import { authenticate } from './utils/OAuth2.js'
+import { setDestinationLayerView } from './createRoute.js'
+import { setDestinationLayer } from './booking.js'
 
-const portal = await OAuth2.authenticate() // ArcGIS Identity authentication
-const webmapId = 'fa870b3d27b743cbb444445bf244b839'
-const theme = new MapTheme() // Contains light and dark basemap
+//const appId = 'xG2kkVesAXGRx5t1'
+//const portal = await authenticate(appId) // ArcGIS Identity authentication
 
-const map = new WebMap({
-  portalItem: {
-    id: webmapId
-  }
-});
+esriConfig.apiKey = "AAPKf28ba4fdd1e945a1be5f8d43dbd650eaMjyiDjdFXaCPZzo5erYJ7Xc7XKvBlbJZIPvNu0O2zwfeFiGhqoBvtQwJUZ1DMXIL"
 
-const view = new MapView({
-  map,
-  container: "viewDiv",
-  padding: {
-    left: 49
-  }
-});
+const webMapId = 'fa870b3d27b743cbb444445bf244b839' // Shared public
+const webmap = new WebMapWrap(webMapId)
+
+const actionBar = new ActionBar(webmap.view, 'route')
+const theme = new MapTheme(webmap.view) 
 
 let resultLayer = null
 
-
-theme.view = view
-
-const actionBar = new ActionBar(view, 'route')
-
-map.when(() => {
-  const { title, description, thumbnailUrl, avgRating } = map.portalItem
-  document.querySelector("#header-title").textContent = title
-  document.querySelector("calcite-shell").hidden = false
-  document.querySelector("calcite-loader").hidden = true
-
-  const destinationLayer = map.layers.getItemAt(0)
+webmap.map.when(() => {
+  const destinationLayer = webmap.map.layers.getItemAt(0)
   destinationLayer.outFields = ['OBJECTID', 'Status', 'adresse', 'bruksenhetsnr']
-  view.whenLayerView(destinationLayer).then((layerView) => {setDestinationLayerView(layerView)})
+  webmap.view.whenLayerView(destinationLayer).then((layerView) => {setDestinationLayerView(layerView)})
   setDestinationLayer(destinationLayer)
 })
 
 export const addFeaturesToMap = (features, fields, symbol, title) => {
-  let graphics = features.map(f => {
-    return new Graphic({
-      geometry: f.geometry,
-      attributes: f.attributes,
-      symbol
-    })
-  })
-
-  resultLayer = new FeatureLayer({ 
-    title,
-    source: graphics,
-    objectIdField: "ObjectID",
-    fields
-  })
-
-  map.add(resultLayer)
-  //zoomToLayer(resultLayer)
+  resultLayer = webmap.addFeatures({features, fields, symbol, title, zoomTo: true})
 }
 
 export const resetMap = () => {
-  map.remove(resultLayer)
+  if (!webmap) return 
+  webmap.map.remove(resultLayer)
   resultLayer = null
 }
 
 export const zoomToLayer = (layer) => {
-  view.goTo(layer.fullExtent)
+  webmap.zoomToLayer(layer)
 }
 
 export const zoomToFeature = (geometry) => {
-  view.goTo(geometry)
+  webmap.zoomToFeature(geometry)
 }
-
-document.getElementById('clear-address-btn')
-.addEventListener('click', event => {
-  displayAddress()
-})

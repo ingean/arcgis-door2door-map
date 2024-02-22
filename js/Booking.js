@@ -1,5 +1,5 @@
 
-import { removeRouteStats } from "./Routing.js"
+import { removeResults } from "./Routing.js"
 import { resetMap } from "./main.js"
 
 let destinationLayer = null
@@ -17,14 +17,14 @@ export const setDestinationLayer = (layer) => {
 
 export const setReservedDestinations = (features) => {
   reservedDestinations = features
-  toggleBookingBtns()
+  setBookingStatus()
 }
 
 export const clearReservations = () => {
   reservedDestinations = null
 
-  toggleBookingBtns() // Disable booking buttons
-  removeRouteStats() // Remove results from sidebar
+  setBookingStatus(false) // Disable booking buttons
+  removeResults() // Remove results from sidebar
   resetMap() // Remove results from map
 }
 
@@ -42,7 +42,7 @@ export const bookReservations = () => {
     updateFeatures: editFeatures
   }
 
-  console.log(`Start booking ${features.length} units...`)
+  console.log(`Start booking ${editFeatures.length} units...`)
   destinationLayer.applyEdits(edits)
   .then(results => {
     console.log('Booking succeeded')
@@ -50,10 +50,7 @@ export const bookReservations = () => {
   .catch(error => console.error(`Editing failed with error: ${error}`))
 }
 
-const toggleBookingBtns = () => {
-  let bookBtn = document.getElementById("book-reservations-btn")
-  let clearBookingBtn = document.getElementById("clear-reservations-btn")
-
-  bookBtn.disabled = !bookBtn.disabled
-  clearBookingBtn.disabled = !clearBookingBtn.disabled
+const setBookingStatus = (status = false) => {
+  let btns = document.querySelectorAll('.booking-btn')
+  btns.forEach(btn => btn.disabled = status)
 }
