@@ -9,7 +9,7 @@ export const setDestinationLayer = (layer) => {
   destinationLayer = layer
   
   let bookBtn = document.getElementById("book-reservations-btn")
-  bookBtn.addEventListener('click', bookReservations)
+  bookBtn.addEventListener('click',() => bookReservations('ReservationConfirmed'))
 
   let clearBookingBtn = document.getElementById("clear-reservations-btn")
   clearBookingBtn.addEventListener('click', clearReservations)
@@ -21,19 +21,19 @@ export const setReservedDestinations = (features) => {
 }
 
 export const clearReservations = () => {
-  reservedDestinations = null
-
   setBookingStatus(false) // Disable booking buttons
   removeResults() // Remove results from sidebar
   resetMap() // Remove results from map
+  if (reservedDestinations) bookReservations('Available')
+  reservedDestinations = null
 }
 
-export const bookReservations = () => {
+export const bookReservations = (status) => {
   const uuid = self.crypto.randomUUID()
 
   const editFeatures = reservedDestinations.map(f => {
-    f.attributes.Status = 'Booket'
-    f.attributes['Sist_booket_datp'] = Date.now()
+    f.attributes.Status = status
+    f.attributes['LastUpdatedAt'] = Date.now()
     f.attributes['BookingID'] = uuid
     return f
   })
@@ -42,12 +42,12 @@ export const bookReservations = () => {
     updateFeatures: editFeatures
   }
 
-  console.log(`Start booking ${editFeatures.length} units...`)
+  console.log(`Setting status of ${editFeatures.length} units to: ${status}...`)
   destinationLayer.applyEdits(edits)
   .then(results => {
-    console.log('Booking succeeded')
+    console.log('Status update succeeded')
   })
-  .catch(error => console.error(`Editing failed with error: ${error}`))
+  .catch(error => console.error(`Status update failed with error: ${error}`))
 }
 
 const setBookingStatus = (status = false) => {

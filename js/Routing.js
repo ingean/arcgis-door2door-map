@@ -15,6 +15,12 @@ const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/
 const minPrDoor = 3
 const kmPrDoor = 0.025
 
+const lineSymbol = {
+  type: "simple-line", 
+  color: [226, 119, 40],
+  width: 6
+}
+
 export const getRoute = async (features) => {
 
   features = features.map(f => {
@@ -77,7 +83,48 @@ const addRouteStats = (route) => {
   let resultBlock = document.getElementById('result-block')
   resultBlock.open = true
 
-  //addFeaturesToMap([route], '', '', 'Rute')
+  let fields = [
+    {
+      name: "FirstStopID",
+      type: "string"
+    },
+    {
+      name: "LastStopID",
+      type: "string"
+    },
+    {
+      name: "Name",
+      type: "string"
+    },
+    {
+      name: "OBJECTID",
+      type: "string"
+    },
+    {
+      name: "Shape_Length",
+      type: "double"
+    },
+    {
+      name: "StopCount",
+      type: "integer"
+    },
+    {
+      name: "Total_Kilometers",
+      type: "double"
+    },
+    {
+      name: "Total_Miles",
+      type: "double"
+    },
+    {
+      name: "Total_WalkTime",
+      type: "double"
+    }
+  ]
+
+
+
+  addFeaturesToMap([route], fields, lineSymbol, 'Rute')
   toggleProgessBar()
 }
 

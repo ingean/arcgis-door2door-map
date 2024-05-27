@@ -1,16 +1,25 @@
 import FeatureSet from "@arcgis/core/rest/support/FeatureSet.js"
 import { addFeaturesToMap } from "./main.js"
 import { getRoute } from "./Routing.js"
-import { setReservedDestinations, clearReservations } from "./bookReservations.js"
+import { setReservedDestinations, clearReservations, bookReservations } from "./bookReservations.js"
 import { toggleProgessBar } from "./utils/utils.js"
 import { ErrorAlert, WarningAlert } from './components/Alert.js'
 import { solveODMatrix } from './ODMatrix.js'
+import { createEuclidRoute } from "./euclidRoute.js"
+import { getTextFromString } from "./utils/format.js"
 
 const maxSearchDistance = 3
 const lineSymbol = {
-  type: "simple-line",  // autocasts as SimpleLineSymbol()
+  type: "simple-line", 
   color: [226, 119, 40],
   width: 6
+}
+
+const pointSymbol = {
+  type: "esriSMS", 
+  color: [255,255,255,64],
+  style: "esriSLSSolid",
+  size: 25
 }
 
 let destinationLayerView = null
@@ -38,26 +47,35 @@ export const createRoute = async (searchResult) => {
   toggleProgessBar()
   clearReservations()
 
-  if (searchResult) origin = searchResult.result.feature
+  let streetName = null
+
+  if (searchResult) {
+    origin = searchResult.result.feature
+    streetName = parseAddress(searchResult.result.name)
+  }
 
   const origins = new FeatureSet({features: [origin]})
-  let candidates = await getEulideanDestinations(origin.geometry, 0.1)
-  if (!checkDestinations(candidates)) return
+  let candidates = await getEulideanDestinations(origin.geometry, 0.1, streetName)
+  if (!checkDestinations(candidates.features)) return
   
-  candidates = candidates.slice(0, 1000) // Maximum 1000 destinations allowed
-  const destinations = new FeatureSet({features: candidates})
+  const candidatesFeatures = candidates.features.slice(0, 1000) // Maximum 1000 destinations allowed
+  const destinations = new FeatureSet({features: candidatesFeatures, fields: candidates.fields})
  
   const data = await solveODMatrix(origins, destinations, getDestinationsToFind())
+  //const data = createEuclidRoute(origins, destinations, getDestinationsToFind())
   showResults(data)
 }
 
 const showResults = async (result) => {
   const maxDCount = getDestinationsToFind()
  
-  addFeaturesToMap(result.features, result.fields, lineSymbol, 'Linjer')
+  //addFeaturesToMap(result.features, result.fields, lineSymbol, 'Linjer')
+  //addFeaturesToMap(result.features, result.fields, pointSymbol, 'Punkter')
+ 
   const selectedDestinations = await getSelectedDestinations(result.features)
   getRoute(selectedDestinations.features)
   setReservedDestinations(selectedDestinations.features)
+  bookReservations('PendingReservation')
 }
 
 export const setDestinationLayerView = (layerView) => {
@@ -75,21 +93,25 @@ export const getDestinationsToFind = () => {
   return element.value
 }
 
-const getEulideanDestinations = async (origin, distance) => {
+const getEulideanDestinations = async (origin, distance, streetName = null) => {
+  let where = `Status = 'Available'`
+  if (streetName) where += ` AND adressenavn LIKE '${streetName}'`
+  
   const query = destinationLayerView.layer.createQuery()
   query.geometry = origin
   query.distance = distance
   query.units = "kilometers"
-  query.where = `Status = 'Ledig'`
+  query.where = where
+  query.outFields = ['OBJECTID', 'Status', 'adresse', 'bruksenhetsnr', 'adressenavn']
 
   let result = await destinationLayerView.queryFeatures(query)
   const maxDCount = getDestinationsToFind()
 
   if (result.features.length < maxDCount * 3) {
-    if (distance * 2 > maxSearchDistance) return result.features
-    return await getEulideanDestinations(origin, distance * 2)
+    if (distance * 2 > maxSearchDistance) return result
+    return await getEulideanDestinations(origin, distance * 2, streetName)
   } else {
-    return result.features
+    return result
   }
 }
 
@@ -101,4 +123,12 @@ const getSelectedDestinations = (odLineFeatures) => {
   query.outFields = ['OBJECTID', 'Status', 'adresse', 'bruksenhetsnr']
 
   return destinationLayerView.queryFeatures(query)
+}
+
+const parseAddress = (searchResult) => {
+  let s = searchResult.split(',')
+  if (s.length > 0) {
+    return getTextFromString(s[0])
+  }
+    return null
 }

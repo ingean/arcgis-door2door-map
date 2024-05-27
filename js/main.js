@@ -21,7 +21,7 @@ let resultLayer = null
 
 webmap.map.when(() => {
   const destinationLayer = webmap.map.layers.getItemAt(0)
-  destinationLayer.outFields = ['OBJECTID', 'Status', 'adresse', 'bruksenhetsnr']
+  destinationLayer.outFields = ['OBJECTID', 'Status', 'adresse', 'bruksenhetsnr', 'adressenavn']
   webmap.view.whenLayerView(destinationLayer).then((layerView) => {setDestinationLayerView(layerView)})
   setDestinationLayer(destinationLayer)
 })

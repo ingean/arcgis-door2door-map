@@ -39,7 +39,14 @@ export default class ActionBar {
       }),
       search: new Search({
         view: view, 
-        container: 'search-widget'
+        container: 'search-widget',
+        includeDefaultSources: false,
+        sources: [{
+          name: "Esri locator",
+          placeholder: "Skriv inn adressen din",
+          apiKey: "AAPKf28ba4fdd1e945a1be5f8d43dbd650eaMjyiDjdFXaCPZzo5erYJ7Xc7XKvBlbJZIPvNu0O2zwfeFiGhqoBvtQwJUZ1DMXIL",
+          url: "https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer"
+        }]
       })
     }
     view.ui.move("zoom", "bottom-right")

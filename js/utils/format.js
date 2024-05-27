@@ -9,3 +9,7 @@ export const time = (mins) => {
 export const distance = (kms) => {
   return (kms >= 1000) ? `${Math.round(kms * 10) / 10} km` : `${Math.round(kms * 1000)} m`
 }
+
+export const getTextFromString = (str) => {
+  return str.match(/[^\d]+/g).join('');
+}

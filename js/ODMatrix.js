@@ -30,4 +30,3 @@ export const solveODMatrix = async (origins, destinations, destinationsToFind) =
 const logJobStatus = (jobInfo) => {
   console.log(`OD Matrix job status: ${jobInfo.jobStatus}`)
 }
-
