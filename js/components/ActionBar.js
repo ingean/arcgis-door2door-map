@@ -5,6 +5,7 @@ import Legend from '@arcgis/core/widgets/Legend.js'
 import Print from '@arcgis/core/widgets/Print.js'
 import Fullscreen from "@arcgis/core/widgets/Fullscreen.js"
 import Search from "@arcgis/core/widgets/Search.js"
+import Extent from "@arcgis/core/geometry/Extent.js"
 import { setOrigin, createRoute } from '../createRoute.js'
 import { clearReservations } from '../bookReservations.js'
 
@@ -41,11 +42,23 @@ export default class ActionBar {
         view: view, 
         container: 'search-widget',
         includeDefaultSources: false,
-        sources: [{
+        sources: [
+          {
           name: "Esri locator",
           placeholder: "Skriv inn adressen din",
           apiKey: "AAPKf28ba4fdd1e945a1be5f8d43dbd650eaMjyiDjdFXaCPZzo5erYJ7Xc7XKvBlbJZIPvNu0O2zwfeFiGhqoBvtQwJUZ1DMXIL",
-          url: "https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer"
+          url: "https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer",
+          filter: { 
+            geometry: new Extent(({
+              xmin: 328168.512, 
+              ymin: 7149736.065,
+              xmax: 337525.355, 
+              ymax: 7156301.755,
+              spatialReference: {
+                wkid: 25833
+              }
+            }))
+          }
         }]
       })
     }
