@@ -12,7 +12,7 @@ const maxSearchDistance = 3
 const lineSymbol = {
   type: "simple-line", 
   color: [226, 119, 40],
-  width: 6
+  width: 16
 }
 
 const pointSymbol = {

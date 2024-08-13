@@ -40,7 +40,6 @@ export default class WebMapWrap {
       return new Graphic({
         geometry: f.geometry,
         attributes: f.attributes,
-        symbol: params.symbol
       })
     })
   
@@ -48,7 +47,11 @@ export default class WebMapWrap {
       title: params.title,
       source: graphics,
       objectIdField: "ObjectID",
-      fields: params.fields
+      fields: params.fields,
+      renderer: {
+        type: "simple",
+        symbol: params.symbol
+      }
     })
   
     this.map.add(layer)

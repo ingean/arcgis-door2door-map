@@ -17,8 +17,8 @@ const kmPrDoor = 0.025
 
 const lineSymbol = {
   type: "simple-line", 
-  color: [226, 119, 40],
-  width: 6
+  color: [233, 104, 32],
+  width: 4
 }
 
 export const getRoute = async (features) => {
