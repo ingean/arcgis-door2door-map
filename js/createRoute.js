@@ -7,6 +7,7 @@ import { ErrorAlert, WarningAlert } from './components/Alert.js'
 import { solveODMatrix } from './ODMatrix.js'
 import { createEuclidRoute } from "./euclidRoute.js"
 import { getTextFromString } from "./utils/format.js"
+import { avgDistanceClosest } from "./utils/geometry.js"
 
 const maxSearchDistance = 3
 const lineSymbol = {
@@ -57,11 +58,13 @@ export const createRoute = async (searchResult) => {
   const origins = new FeatureSet({features: [origin]})
   let candidates = await getEulideanDestinations(origin.geometry, 0.1, streetName)
   if (!checkDestinations(candidates.features)) return
-  
+
+  const destinationsToFind = adjustDestinationsToFind(origin, candidates.features)
+
   const candidatesFeatures = candidates.features.slice(0, 1000) // Maximum 1000 destinations allowed
   const destinations = new FeatureSet({features: candidatesFeatures, fields: candidates.fields})
  
-  const data = await solveODMatrix(origins, destinations, getDestinationsToFind())
+  const data = await solveODMatrix(origins, destinations, destinationsToFind)
   //const data = createEuclidRoute(origins, destinations, getDestinationsToFind())
   showResults(data)
 }
@@ -89,8 +92,19 @@ export const setOrigin = (searchResult) => {
 }
 
 export const getDestinationsToFind = () => {
-  let element = document.getElementById("unit-count")
+  let element = document.getElementById("unit-count")  
   return element.value
+}
+
+export const adjustDestinationsToFind = (origin, features) => {
+  let destinationsToFind = getDestinationsToFind()
+
+  let avDistance = avgDistanceClosest(origin, features, destinationsToFind)
+  
+  //Check what the distance will be
+  console.log(avDistance)
+  
+  return destinationsToFind
 }
 
 const getEulideanDestinations = async (origin, distance, streetName = null) => {
