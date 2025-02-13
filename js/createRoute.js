@@ -7,24 +7,17 @@ import { ErrorAlert, WarningAlert } from './components/Alert.js'
 import { solveODMatrix } from './ODMatrix.js'
 import { createEuclidRoute } from "./euclidRoute.js"
 import { getTextFromString } from "./utils/format.js"
-import { avgDistanceClosest } from "./utils/geometry.js"
+import { avgDistanceClosest, sortFeaturesByDistance } from "./utils/geometry.js"
+import { candidatePointSymbol, odInPointSymbol, odLineSymbol, labelClass, routeLineSymbol, routePointSymbol } from "./utils/symbols.js"
+import { solveVRP } from "./VRP.js"
 
-const maxSearchDistance = 3
-const lineSymbol = {
-  type: "simple-line", 
-  color: [226, 119, 40],
-  width: 16
-}
-
-const pointSymbol = {
-  type: "esriSMS", 
-  color: [255,255,255,64],
-  style: "esriSLSSolid",
-  size: 25
-}
+const maxSearchDistance = 8
+const useVRP = true
 
 let destinationLayerView = null
 let origin = null
+let onStreetCount = 0
+let onStreetCandidates = null
 
 const checkDestinations = (destinations) => {
   if (destinations.length == 0) {
@@ -52,33 +45,75 @@ export const createRoute = async (searchResult) => {
 
   if (searchResult) {
     origin = searchResult.result.feature
+    origin.attributes.Name = 'Startpunkt'
     streetName = parseAddress(searchResult.result.name)
   }
 
   const origins = new FeatureSet({features: [origin]})
   let candidates = await getEulideanDestinations(origin.geometry, 0.1, streetName)
   if (!checkDestinations(candidates.features)) return
+ 
+  candidates.features = sortFeaturesByDistance(origin.geometry, candidates.features)
+  //showCandidatesInMap(candidates)
 
   const destinationsToFind = adjustDestinationsToFind(origin, candidates.features)
 
-  const candidatesFeatures = candidates.features.slice(0, 1000) // Maximum 1000 destinations allowed
-  const destinations = new FeatureSet({features: candidatesFeatures, fields: candidates.fields})
+  const candidateLimit = (useVRP) ? 200 : 1000
+  const maxCandidates = (destinationsToFind * 3 < candidateLimit) ? destinationsToFind * 3 : candidateLimit 
  
-  const data = await solveODMatrix(origins, destinations, destinationsToFind)
-  //const data = createEuclidRoute(origins, destinations, getDestinationsToFind())
-  showResults(data)
+  const candidatesFeatures = candidates.features.slice(0, maxCandidates)
+  const destinations = new FeatureSet({features: candidatesFeatures, fields: candidates.fields})
+
+  if (useVRP) { 
+    createVRPRoute(origins, destinations) 
+  } else { 
+    createODRoute(origins, destinations, destinationsToFind) 
+  }
 }
 
-const showResults = async (result) => {
+const createVRPRoute = async (origins, destinations) => {
+  //showODInputInMap(destinations)
+  await solveVRP(origins, destinations, 120)
+}
+
+const createODRoute = async (origins, destinations, destinationsToFind) => {
+  //showODInputInMap(destinations)
+  const odResults = await solveODMatrix(origins, destinations, destinationsToFind)
+  //showODResultsInMap(odResults)
+  showResults(origins, odResults)
+}
+
+const showCandidatesInMap = (candidates) => {
+  let pointSymbol = candidatePointSymbol()
+  console.log(`Antall kandidater (luftlinje): ${candidates.features.length}`)
+  addFeaturesToMap(candidates.features, candidates.fields, 'OBJECTID', pointSymbol, null, 'Kandidater')
+}
+
+const showODInputInMap = (destinations) => {
+  let pointSymbol = odInPointSymbol()
+  console.log(`Antall kandidater sendt til analyse: ${destinations.features.length}`)
+  addFeaturesToMap(destinations.features, destinations.fields, 'OBJECTID', pointSymbol, null, 'OD input')
+}
+
+const showODResultsInMap = (odResults) => {
+  const label = labelClass('Total_Time', 'above-center')
+  const pointSymbol = odLineSymbol()
+  console.log(`Antall resultater fra OD-matrise: ${odResults.features.length}`)
+  addFeaturesToMap(odResults.features, odResults.fields, 'OBJECTID', pointSymbol, label, 'OD Resultater')
+}
+
+const showResults = async (origins, odResults) => {
   const maxDCount = getDestinationsToFind()
  
   //addFeaturesToMap(result.features, result.fields, lineSymbol, 'Linjer')
   //addFeaturesToMap(result.features, result.fields, pointSymbol, 'Punkter')
  
-  const selectedDestinations = await getSelectedDestinations(result.features)
-  getRoute(selectedDestinations.features)
-  setReservedDestinations(selectedDestinations.features)
-  bookReservations('PendingReservation')
+  const selectedDestinations = await getSelectedDestinations(odResults.features)
+  console.log(`Antall valgte destinasjoner: ${selectedDestinations.features.length}`)
+
+  getRoute(origins.features.concat(selectedDestinations.features))
+  //setReservedDestinations(selectedDestinations.features)
+  //bookReservations('PendingReservation')
 }
 
 export const setDestinationLayerView = (layerView) => {
@@ -99,32 +134,47 @@ export const getDestinationsToFind = () => {
 export const adjustDestinationsToFind = (origin, features) => {
   let destinationsToFind = getDestinationsToFind()
 
-  let avDistance = avgDistanceClosest(origin, features, destinationsToFind)
+  //let avDistance = avgDistanceClosest(origin, features, destinationsToFind)
   
   //Check what the distance will be
-  console.log(avDistance)
+  //console.log(avDistance)
   
   return destinationsToFind
 }
 
-const getEulideanDestinations = async (origin, distance, streetName = null) => {
+const getEulideanDestinations = async (origin, distance, streetName, onStreet = true) => {
   let where = `Status = 'Available'`
-  if (streetName) where += ` AND adressenavn LIKE '${streetName}'`
+  if (onStreet) {
+    where += ` AND adressenavn LIKE '${streetName}'`
+  } else {
+    where += ` AND adressenavn NOT LIKE '${streetName}'`
+  }
   
   const query = destinationLayerView.layer.createQuery()
   query.geometry = origin
   query.distance = distance
   query.units = "kilometers"
   query.where = where
-  query.outFields = ['OBJECTID', 'Status', 'adresse', 'bruksenhetsnr', 'adressenavn']
+  query.outFields = ['OBJECTID', 'ServiceTime', 'Status', 'adresse', 'bruksenhetsnr', 'adressenavn']
 
-  let result = await destinationLayerView.queryFeatures(query)
-  const maxDCount = getDestinationsToFind()
+  let result = await destinationLayerView.layer.queryFeatures(query)
+  //result.features = sortFeaturesByDistance(origin, result.features)
+  
+  const maxCandidateCount = getDestinationsToFind() * 3
 
-  if (result.features.length < maxDCount * 3) {
-    if (distance * 2 > maxSearchDistance) return result
-    return await getEulideanDestinations(origin, distance * 2, streetName)
+  if (onStreetCount + result.features.length < maxCandidateCount && distance * 2 < maxSearchDistance) {
+    if (result.features.length === onStreetCount || onStreetCandidates) {
+      if (!onStreetCandidates) onStreetCandidates = result
+      return await getEulideanDestinations(origin, distance * 2, streetName, false)
+    } else {
+      onStreetCount = result.features.length
+      return await getEulideanDestinations(origin, distance * 2, streetName)
+    }
   } else {
+    result.features = onStreetCandidates.features.concat(result.features)
+    //result.features = sortFeaturesByDistance(origin, result.features)
+    onStreetCount = 0
+    onStreetCandidates = null
     return result
   }
 }
@@ -136,7 +186,7 @@ const getSelectedDestinations = (odLineFeatures) => {
   query.where = `ObjectID in (${destinationIds.toString()})`
   query.outFields = ['OBJECTID', 'Status', 'adresse', 'bruksenhetsnr']
 
-  return destinationLayerView.queryFeatures(query)
+  return destinationLayerView.layer.queryFeatures(query)
 }
 
 const parseAddress = (searchResult) => {

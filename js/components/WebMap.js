@@ -46,14 +46,15 @@ export default class WebMapWrap {
     let layer = new FeatureLayer({ 
       title: params.title,
       source: graphics,
-      objectIdField: "ObjectID",
+      objectIdField: params.ObjectIDField,
       fields: params.fields,
       renderer: {
         type: "simple",
         symbol: params.symbol
       }
     })
-  
+
+    if (params.labelClass) layer.labelingInfo = [params.labelClass]
     this.map.add(layer)
 
     if (params?.zoomTo) this.zoomToLayer(layer)

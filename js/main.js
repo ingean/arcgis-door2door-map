@@ -21,13 +21,13 @@ let resultLayer = null
 
 webmap.map.when(() => {
   const destinationLayer = webmap.map.layers.getItemAt(0)
-  destinationLayer.outFields = ['OBJECTID', 'Status', 'adresse', 'bruksenhetsnr', 'adressenavn']
+  destinationLayer.outFields = ['OBJECTID', 'Name', 'ServiceTime', 'Status', 'adresse', 'bruksenhetsnr', 'adressenavn']
   webmap.view.whenLayerView(destinationLayer).then((layerView) => {setDestinationLayerView(layerView)})
   setDestinationLayer(destinationLayer)
 })
 
-export const addFeaturesToMap = (features, fields, symbol, title) => {
-  resultLayer = webmap.addFeatures({features, fields, symbol, title, zoomTo: true})
+export const addFeaturesToMap = (features, fields, ObjectIDField, symbol, labelClass = null, title) => {
+  resultLayer = webmap.addFeatures({features, fields, ObjectIDField, symbol, labelClass, title, zoomTo: true})
 }
 
 export const resetMap = () => {

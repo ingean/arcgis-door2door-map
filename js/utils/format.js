@@ -11,5 +11,5 @@ export const distance = (kms) => {
 }
 
 export const getTextFromString = (str) => {
-  return str.match(/[^\d]+/g).join('');
+  return str.match(/[^\d]+/g).join('').trim();
 }
