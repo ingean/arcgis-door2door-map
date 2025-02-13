@@ -12,12 +12,17 @@ import { candidatePointSymbol, odInPointSymbol, odLineSymbol, labelClass, routeL
 import { solveVRP } from "./VRP.js"
 
 const maxSearchDistance = 8
-const useVRP = true
 
+let useVRP = true
 let destinationLayerView = null
 let origin = null
 let onStreetCount = 0
 let onStreetCandidates = null
+
+const setAlgorithm = () => {
+  let element = document.getElementById("vrpSwitch")  
+  useVRP = element.checked
+}
 
 const checkDestinations = (destinations) => {
   if (destinations.length == 0) {
@@ -39,6 +44,7 @@ const checkDestinations = (destinations) => {
 
 export const createRoute = async (searchResult) => {
   toggleProgessBar()
+  setAlgorithm() // Check if VRP should be used
   clearReservations()
 
   let streetName = null
