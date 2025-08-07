@@ -1,6 +1,6 @@
 import FeatureSet from "@arcgis/core/rest/support/FeatureSet.js"
 import { addFeaturesToMap } from "./main.js"
-import { getRoute } from "./Routing.js"
+import { solveRoute } from "./Routing.js"
 import { setReservedDestinations, clearReservations, bookReservations } from "./bookReservations.js"
 import { toggleProgessBar } from "./utils/utils.js"
 import { ErrorAlert, WarningAlert } from './components/Alert.js'
@@ -69,24 +69,45 @@ export const createRoute = async (searchResult) => {
  
   const candidatesFeatures = candidates.features.slice(0, maxCandidates)
   const destinations = new FeatureSet({features: candidatesFeatures, fields: candidates.fields})
+  const closestDestinations = await getClosestDestinations(origins, destinations, destinationsToFind)
 
   if (useVRP) { 
-    createVRPRoute(origins, destinations) 
+    createVRPRoute(origins, closestDestinations) 
   } else { 
-    createODRoute(origins, destinations, destinationsToFind) 
+    solveRoute(origins.features.concat(closestDestinations)) 
   }
 }
 
+const getClosestDestinations = async (origins, destinations, destinationsToFind) => {
+  const odResults = await solveODMatrix(origins, destinations, destinationsToFind)
+  const closestDestinations = await getSelectedDestinations(odResults.features)
+  console.log(`Antall valgte destinasjoner: ${closestDestinations.length}`)
+  return closestDestinations
+}
+
 const createVRPRoute = async (origins, destinations) => {
-  //showODInputInMap(destinations)
-  await solveVRP(origins, destinations, 120)
+  const orders = weightDestinations(destinations)
+  const ordersFS = new FeatureSet({features: orders})
+  await solveVRP(origins, ordersFS, 120)
+}
+
+const weightDestinations = (destinations) => {
+  return destinations.map(f => {
+    f.attributes.ServiceTime = 3
+    f.attributes.Revenue = 0
+    if (f.attributes.Total_Time < 15) f.attributes.Revenue = 1
+    if (f.attributes.Total_Time < 10) f.attributes.Revenue = 2
+    if (f.attributes.Total_Time < 5) f.attributes.Revenue = 3
+    return f
+   }
+  )
 }
 
 const createODRoute = async (origins, destinations, destinationsToFind) => {
   //showODInputInMap(destinations)
   const odResults = await solveODMatrix(origins, destinations, destinationsToFind)
   //showODResultsInMap(odResults)
-  showResults(origins, odResults)
+  optimizeRoute(origins, odResults)
 }
 
 const showCandidatesInMap = (candidates) => {
@@ -108,7 +129,7 @@ const showODResultsInMap = (odResults) => {
   addFeaturesToMap(odResults.features, odResults.fields, 'OBJECTID', pointSymbol, label, 'OD Resultater')
 }
 
-const showResults = async (origins, odResults) => {
+const optimizeRoute = async (origins, odResults) => {
   const maxDCount = getDestinationsToFind()
  
   //addFeaturesToMap(result.features, result.fields, lineSymbol, 'Linjer')
@@ -117,7 +138,7 @@ const showResults = async (origins, odResults) => {
   const selectedDestinations = await getSelectedDestinations(odResults.features)
   console.log(`Antall valgte destinasjoner: ${selectedDestinations.features.length}`)
 
-  getRoute(origins.features.concat(selectedDestinations.features))
+  solveRoute(origins.features.concat(selectedDestinations.features))
   //setReservedDestinations(selectedDestinations.features)
   //bookReservations('PendingReservation')
 }
@@ -185,14 +206,18 @@ const getEulideanDestinations = async (origin, distance, streetName, onStreet = 
   }
 }
 
-const getSelectedDestinations = (odLineFeatures) => {
+const getSelectedDestinations = async (odLineFeatures) => {
   const destinationIds = odLineFeatures.map(f => f.attributes.DestinationOID)
 
   const query = destinationLayerView.layer.createQuery()
   query.where = `ObjectID in (${destinationIds.toString()})`
   query.outFields = ['OBJECTID', 'Status', 'adresse', 'bruksenhetsnr']
 
-  return destinationLayerView.layer.queryFeatures(query)
+  let destinations = await destinationLayerView.layer.queryFeatures(query)
+  return destinations.features.map(f => {
+    f.attributes.Total_Time = odLineFeatures.find(odf => odf.attributes.DestinationOID === f.attributes.OBJECTID).attributes.Total_Time
+    return f
+  })
 }
 
 const parseAddress = (searchResult) => {

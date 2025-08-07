@@ -36,6 +36,7 @@ export const solveVRP = async (origins, destinations) => {
     time_units: "Minutes",
     populate_stop_shapes: true,
     travel_mode: travelMode,
+    //spatially_cluster_routes: true,
     token: apiKey,
     f:'json'
   }

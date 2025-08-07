@@ -48,7 +48,7 @@ const setRoutingService = async () => {
 }
 
 
-export const getRoute = async (features) => {
+export const solveRoute = async (features) => {
   let url = await setRoutingService()
 
   features = features.map(f => {
