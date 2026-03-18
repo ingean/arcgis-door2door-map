@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Geodata AS - Demo</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "@arcgis/": "https://js.arcgis.com/4.29/@arcgis/"
+        }
+      }
+    </script>
+    <script src="https://js.arcgis.com/calcite-components/2.1.0/calcite.esm.js" type="module"></script>
+
+    <link rel="icon" type="image/png" href="./images/geodata-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="./images/geodata-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="./images/geodata-96x96.png" sizes="96x96">
+    <link rel="stylesheet" href="https://js.arcgis.com/calcite-components/2.1.0/calcite.css" />
+    <link id="jsapi-theme-light" rel="stylesheet" href="https://js.arcgis.com/4.28/@arcgis/core/assets/esri/themes/light/main.css">
+    <link id="jsapi-theme-dark" rel="stylesheet" href="https://js.arcgis.com/4.28/@arcgis/core/assets/esri/themes/dark/main.css" disabled/>
+    <link rel="stylesheet" href="./css/main.css" />
+    <link rel="stylesheet" href="./css/sidebar.css" />
+  </head>
+  <body>
+    <div id="calcite-theme" class="calcite-mode-light">
+
+      <calcite-shell>
+        <calcite-navigation slot="header">
+          <calcite-navigation-logo slot="logo" thumbnail="./images/kreftforeningen_logo.jpeg"></calcite-navigation-logo>
+          <calcite-action slot="content-end" icon="map-pin" scale="l" text="Lag rute"></calcite-action>
+        </calcite-navigation>
+    
+        <calcite-loader active></calcite-loader>
+
+        <calcite-shell-panel slot="panel-start" displayMode="dock">
+  
+          <calcite-action-bar slot="action-bar" intl-collapse="Minimere" intl-expand="Maksimere">
+            <calcite-action data-action-id="route" icon="walking-time" text="Innsamling"></calcite-action>
+          </calcite-action-bar>
+  
+          <!-- info panel (populates with info from the web map) -->
+          <calcite-panel heading="Lag ny innsamling" data-panel-id="route">
+            
+            <calcite-block heading="Mine opplysninger" description="Registrere dine opplysninger for å starte en innsamling" open>
+              <calcite-label>
+                Navn
+                <calcite-input-text id="form-name" placeholder="Skriv inn navnet ditt" icon="employee-id"></calcite-input-text>
+              </calcite-label>
+              <calcite-label>
+                Adresse
+                <div id="search-widget"></div>
+              </calcite-label>
+              <calcite-label>
+                E-post
+                <calcite-input-text id="form-mail" placeholder="Skriv inn din e-postadresse" icon="email-address"></calcite-input-text>
+              </calcite-label>
+              <calcite-label>
+                Mobilnummer
+                <calcite-input-number id="form-mobile" placeholder="Skriv inn ditt mobilnummer" icon="keypad" min="10000000" max="99999999"></calcite-input-number>
+              </calcite-label>                
+              <calcite-label>
+                Antall husstander jeg vil besøke
+                <calcite-input-number id="unit-count" placeholder="Velg et tall mellom 10 og 50" step="10" icon="personal-homepage" max="100" min="10" value="75"></calcite-input-number>
+              </calcite-label>
+              <calcite-label>
+                Bruk VRP-analyse
+                <calcite-switch id="vrpSwitch" label="Bruk VRP-analyse" checked></calcite-switch>
+              </calcite-label>
+              <calcite-progress id="progress" value="0.8" type="indeterminate" hidden></calcite-progress>
+            </calcite-block>
+            
+            <calcite-block id="result-block" heading="Din innsamlingsrute" description="Basert på din hjemmeadresse">
+              <calcite-block-section id="result-details-section" text="Addresser å besøke">
+                <calcite-list id="result-list"></calcite-list>
+              </calcite-block-section>
+              <calcite-block-section id="result-section" open text="Oppsummering">
+                <div id="result-text"></div>
+              </calcite-block-section>
+              <div class="toolbar-btns">
+                <calcite-button id="book-reservations-btn" class="booking-btn" icon-start="save" disabled>Bekreft rute</calcite-button>
+                <calcite-button id="clear-reservations-btn" class="booking-btn" icon-start="trash" kind="danger" disabled>Forkast rute</calcite-button>
+                <calcite-button id="print-btn" class="booking-btn" icon-start="camera" kind="danger" disabled>Ta skjermbilde</calcite-button>
+              </div>
+            </calcite-block>
+
+          </calcite-panel>
+  
+        </calcite-shell-panel>
+        
+        <div id="viewDiv"></div>
+        <div id="alert-container"></div>
+      
+      </calcite-shell>
+    
+    </div> <!-- Calcite-theme-->
+  </body>
+  <script type="module" src="js/main.js"> 
+  </script>
+</html>
